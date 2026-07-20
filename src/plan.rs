@@ -5,6 +5,7 @@ use crate::bom::{detect_bom, BomEntry};
 use crate::clockplan::{plan_clocks, ClockPlan};
 use crate::error::Result;
 use crate::lineage::{pick_template, TemplatePick};
+use crate::loader::{scan_rom_loader, LoaderHazard};
 use crate::mra::{parse_mra, MraInventory};
 use crate::refdata::RefData;
 use crate::services::{detect_services, ServiceHit};
@@ -52,6 +53,8 @@ pub struct PortPlan {
     pub template: Option<TemplatePick>,
     /// (6) ROM inventory (per `.mra`).
     pub rom_inventory: Vec<MraInventory>,
+    /// (6b) Candidate ROM-format hazards found in the loader RTL (heuristic).
+    pub loader_hazards: Vec<LoaderHazard>,
     /// The MiSTer services the core uses + their APF equivalents.
     pub services: Vec<ServiceHit>,
     /// (7) Risk summary.
@@ -140,8 +143,9 @@ pub fn recon(core: impl Into<String>, files: &CoreFiles, refdata: &RefData) -> P
     // (5) template
     let template = pick_template(&refdata.lineage, cdc.summary.external_memory);
 
-    // (6) ROM inventory
+    // (6) ROM inventory + (6b) loader-RTL swizzle candidates
     let rom_inventory: Vec<MraInventory> = files.mra().map(|f| parse_mra(&f.text)).collect();
+    let loader_hazards = scan_rom_loader(files);
 
     // services
     let services = detect_services(files, &refdata.services);
@@ -159,6 +163,9 @@ pub fn recon(core: impl Into<String>, files: &CoreFiles, refdata: &RefData) -> P
         for h in &inv.hazards {
             risks.push(format!("ROM ({}): {}", h.kind, h.detail));
         }
+    }
+    for h in &loader_hazards {
+        risks.push(format!("ROM-loader ({}): {}", h.confidence, h.detail));
     }
     if bom.iter().flat_map(|b| &b.pocket_parts).any(|p| p.kind != "true-drop-in") {
         risks.push(
@@ -205,6 +212,7 @@ pub fn recon(core: impl Into<String>, files: &CoreFiles, refdata: &RefData) -> P
         bom,
         template,
         rom_inventory,
+        loader_hazards,
         services,
         risks,
         limits,

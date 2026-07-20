@@ -52,6 +52,7 @@ pub mod bom;
 pub mod clockplan;
 pub mod error;
 pub mod lineage;
+pub mod loader;
 pub mod mra;
 pub mod plan;
 pub mod refdata;

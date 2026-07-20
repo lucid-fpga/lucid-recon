@@ -107,6 +107,12 @@ pub fn to_human(plan: &PortPlan) -> String {
             }
         }
     }
+    if !plan.loader_hazards.is_empty() {
+        section(&mut out, "6b. ROM-loader RTL hazards (candidates — verify)");
+        for h in &plan.loader_hazards {
+            out.push_str(&format!("  [{}] {} (token `{}`): {}\n", h.confidence, h.file, h.token, h.detail));
+        }
+    }
 
     if !plan.services.is_empty() {
         section(&mut out, "MiSTer→APF services detected");

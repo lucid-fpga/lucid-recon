@@ -29,6 +29,14 @@
       "provenance": "mamedev/mame src/mame/irem/m92.cpp (26.6667 MHz XTAL); public opengateware/arcade-irem_m92."
     },
     {
+      "family": "irem-m90",
+      "cores": ["irem_m90", "m90"],
+      "core_ratio": "3:1 (sys 40 MHz : mem 120 MHz), pixel ~8.57 MHz (ce_pix)",
+      "signatures": ["m90", "irem_m90", "iremm90"],
+      "note": "Irem M90: V35 at 32 MHz XTAL / 2 = 16 MHz; the 40 MHz sys is a SYNTHETIC jtframe base (shared with M92, wickerwaka family), not a raw XTAL -- flag as synthetic. SDRAM at 3x; pixel is a ce_pix enable to replace with a real pixel PLL. Same 3:1 40/120 family as M72/M92; fork the M72/M92 opengateware port as the direct sibling template.",
+      "provenance": "mamedev/mame src/mame/irem/m90.cpp XTAL(32'000'000); public MiSTer-devel/Arcade-IremM90_MiSTer (wickerwaka)."
+    },
+    {
       "family": "sega-genesis",
       "cores": ["genesis", "megadrive", "megadriv"],
       "core_ratio": "2:1 (sys ~53.69 MHz : mem ~107.4 MHz), pixel ~6.7 MHz",

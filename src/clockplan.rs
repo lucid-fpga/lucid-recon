@@ -24,6 +24,31 @@ pub struct ClockPlan {
     pub provenance: Vec<String>,
 }
 
+/// Word-boundary substring match: `sig` must appear in `corpus` (already
+/// lowercased) bounded by non-alphanumeric characters on both sides, so a short
+/// signature like `nes` does not match inside a longer token (`scanlines`). `_` and
+/// every other non-alphanumeric are separators, so `m72` still matches `irem_m72`.
+fn token_match(corpus: &str, sig: &str) -> bool {
+    if sig.is_empty() {
+        return false;
+    }
+    let bytes = corpus.as_bytes();
+    let n = sig.len();
+    let is_word = |c: u8| c.is_ascii_alphanumeric();
+    let mut start = 0;
+    while let Some(pos) = corpus[start..].find(sig) {
+        let i = start + pos;
+        let before_ok = i == 0 || !is_word(bytes[i - 1]);
+        let after = i + n;
+        let after_ok = after >= bytes.len() || !is_word(bytes[after]);
+        if before_ok && after_ok {
+            return true;
+        }
+        start = i + 1;
+    }
+    false
+}
+
 /// Build the clock plan for `core_name` given its files and the clock data.
 pub fn plan_clocks(core_name: &str, files: &CoreFiles, clocks: &ClockData) -> ClockPlan {
     let corpus = {
@@ -41,7 +66,7 @@ pub fn plan_clocks(core_name: &str, files: &CoreFiles, clocks: &ClockData) -> Cl
     };
 
     let matched = clocks.families.iter().find(|fam| {
-        fam.signatures.iter().any(|s| corpus.contains(&s.to_ascii_lowercase()))
+        fam.signatures.iter().any(|s| token_match(&corpus, &s.to_ascii_lowercase()))
     });
 
     let mut notes = Vec::new();
@@ -95,6 +120,44 @@ mod tests {
         assert!(plan.core_ratio.as_deref().unwrap().contains("3:1"));
         assert!(plan.ref_swap.contains("74.25"));
         assert!(plan.pixel_pll.to_lowercase().contains("pixel"));
+    }
+
+    #[test]
+    fn token_match_respects_word_boundaries() {
+        // the real-core regression: `nes` must NOT match inside `scanlines`
+        assert!(!token_match("sys/scanlines.v", "nes"));
+        assert!(!token_match("genesis", "nes"));
+        // but real tokens still match (underscore / slash are separators)
+        assert!(token_match("rtl/m72_core.v", "m72"));
+        assert!(token_match("arcade-irem_m72", "m72"));
+        assert!(token_match("rtl/nes_top.v", "nes"));
+    }
+
+    #[test]
+    fn m90_resolves_to_irem_3to1_not_nintendo_nes() {
+        // real M90 tree carries sys/scanlines.v; with the fix it must land on irem-m90 3:1
+        let files = CoreFiles::from_pairs([
+            ("rtl/ga25_sdram.sv", "module ga25_sdram(); endmodule"),
+            ("sys/scanlines.v", "// stock mister scanlines"),
+        ]);
+        let clocks = RefData::bundled().unwrap().clocks;
+        let plan = plan_clocks("Arcade-IremM90_MiSTer", &files, &clocks);
+        assert_eq!(plan.family.as_deref(), Some("irem-m90"), "M90 → irem-m90, not nintendo-nes");
+        assert!(plan.core_ratio.as_deref().unwrap().contains("3:1"), "M90 is 3:1");
+    }
+
+    #[test]
+    fn no_regression_m72_m92_nes_families() {
+        let clocks = RefData::bundled().unwrap().clocks;
+        let m72 = plan_clocks("irem_m72", &CoreFiles::from_pairs([("rtl/m72.v", "")]), &clocks);
+        assert_eq!(m72.family.as_deref(), Some("irem-m72"));
+        assert!(m72.core_ratio.as_deref().unwrap().contains("3:1"));
+        let m92 = plan_clocks("irem_m92", &CoreFiles::from_pairs([("rtl/m92.v", "")]), &clocks);
+        assert_eq!(m92.family.as_deref(), Some("irem-m92"));
+        // NES must still be 4:1, and must NOT be shadowed by anything
+        let nes = plan_clocks("NES_MiSTer", &CoreFiles::from_pairs([("rtl/nes.v", "")]), &clocks);
+        assert_eq!(nes.family.as_deref(), Some("nintendo-nes"));
+        assert!(nes.core_ratio.as_deref().unwrap().contains("4:1"));
     }
 
     #[test]
