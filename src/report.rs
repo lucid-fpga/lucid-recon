@@ -1,6 +1,7 @@
 //! Rendering the [`PortPlan`]: structured JSON (shaped so downstream tools can
 //! consume the plan and its CDC hotspots) and a human-readable report.
 
+use crate::equiv::EquivReport;
 use crate::plan::PortPlan;
 use serde::Serialize;
 
@@ -155,4 +156,65 @@ mod tests {
         assert_eq!(v["tool"], "lucid-recon");
         assert!(!v["cdc_hotspots"].as_array().unwrap().is_empty());
     }
+}
+
+// --- RTL-equivalence (`equiv`) rendering ---
+
+#[derive(Serialize)]
+struct EquivEnvelope<'a> {
+    tool: &'static str,
+    version: &'static str,
+    #[serde(flatten)]
+    report: &'a EquivReport,
+}
+
+/// The equivalence report as pretty JSON.
+pub fn equiv_json(report: &EquivReport) -> String {
+    let env = EquivEnvelope { tool: TOOL, version: VERSION, report };
+    serde_json::to_string_pretty(&env).expect("EquivReport serializes")
+}
+
+/// The equivalence report as human text (neutral: localizes, never classifies).
+pub fn equiv_human(report: &EquivReport) -> String {
+    let mut out = String::new();
+    out.push_str("=== shim-don't-fork audit (MiSTer ↔ Pocket game RTL) ===\n");
+    out.push_str(&format!(
+        "  game modules shared: {} ({} identical, {} differ)  ·  framework modules excluded: {}\n",
+        report.shared_compared,
+        report.shared_identical,
+        report.differs.len(),
+        report.framework_excluded
+    ));
+    if report.invariant_held {
+        out.push_str("  INVARIANT HELD — every shared game-RTL module is structurally identical.\n");
+    } else {
+        out.push_str("  INVARIANT BROKE — shared game-RTL module(s) DIFFER (the core was modified here):\n");
+        for d in &report.differs {
+            out.push_str(&format!(
+                "    [DIFFERS] {}  (mister: {}  ·  port: {})\n",
+                d.name,
+                d.mister_file.as_deref().unwrap_or("?"),
+                d.port_file.as_deref().unwrap_or("?")
+            ));
+        }
+    }
+    if !report.port_only.is_empty() {
+        out.push_str(&format!(
+            "  port-only game modules ({}): {}\n",
+            report.port_only.len(),
+            report.port_only.iter().map(|m| m.name.as_str()).collect::<Vec<_>>().join(", ")
+        ));
+    }
+    if !report.mister_only.is_empty() {
+        out.push_str(&format!(
+            "  mister-only game modules ({}): {}\n",
+            report.mister_only.len(),
+            report.mister_only.iter().map(|m| m.name.as_str()).collect::<Vec<_>>().join(", ")
+        ));
+    }
+    out.push_str(&format!("  boundary: {}\n", report.boundary_note));
+    for n in &report.notes {
+        out.push_str(&format!("  note: {n}\n"));
+    }
+    out
 }

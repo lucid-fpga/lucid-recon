@@ -50,6 +50,7 @@
 
 pub mod bom;
 pub mod clockplan;
+pub mod equiv;
 pub mod error;
 pub mod lineage;
 pub mod loader;
@@ -60,7 +61,18 @@ pub mod report;
 pub mod services;
 pub mod source;
 
+pub use equiv::{equiv, EquivReport};
 pub use error::{Error, Result};
 pub use plan::{recon, recon_dir, PortPlan};
 pub use refdata::RefData;
 pub use source::CoreFiles;
+
+use std::path::Path;
+
+/// Audit the shim-don't-fork invariant between a MiSTer source dir and a Pocket port
+/// dir: did the port keep the game RTL untouched? See [`equiv::equiv`].
+pub fn equiv_dirs(mister: impl AsRef<Path>, port: impl AsRef<Path>) -> Result<EquivReport> {
+    let m = CoreFiles::from_dir(mister)?;
+    let p = CoreFiles::from_dir(port)?;
+    Ok(equiv::equiv(&m, &p))
+}

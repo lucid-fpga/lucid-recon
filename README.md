@@ -52,6 +52,29 @@ lucid-recon --json <mister-core-dir>   # machine-readable plan for downstream to
 Exit status is non-zero when a high-severity CDC hotspot fires (a real crossing to
 constrain), so recon can gate a pipeline.
 
+### `equiv` — audit the shim-don't-fork invariant
+
+```
+lucid-recon equiv <mister-core-dir> <pocket-port-dir>          # human-readable audit
+lucid-recon equiv --json <mister-core-dir> <pocket-port-dir>   # machine-readable
+```
+
+The porting method's core rule is *shim, don't fork*: a Pocket port should wrap the
+game RTL in a new framework, not modify the game logic itself. `equiv` checks that
+mechanically. It extracts every RTL module from each tree, sets aside the framework
+modules (the platform shell — `apf/`, `sys/`, PLLs, top-levels), and structurally
+diffs the **game** modules the two trees share by name.
+
+The diff is **structural, not textual** — comments and whitespace are stripped and the
+source is tokenized, so a reformat or a re-indent is not a difference; a changed token
+is. A shared game module that differs means the game RTL was modified there, and the
+invariant broke. Exit status is non-zero when that happens.
+
+It **localizes, it does not classify.** A DIFFERS is "these two modules are not the
+same here" — never "this is a bug." Framework-vs-game partition is a name/path
+heuristic; the report states its boundary confidence so you can audit the split
+yourself. Modules present in only one tree are listed, not judged.
+
 ## Testing
 
 ```
