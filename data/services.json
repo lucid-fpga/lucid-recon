@@ -1,0 +1,61 @@
+{
+  "_comment": "Public MiSTer->APF service map: how each MiSTer framework service maps onto the Analogue-Pocket APF. Derivable from public open-fpga/core-template, agg23/analogue-pocket-utils, and MiSTer's public hps_io/sys framework. Signatures are RTL tokens that reveal the MiSTer service is used in the source core.",
+  "services": [
+    {
+      "mister": "hps_io + CONF_STR OSD string + emu(...) port contract",
+      "apf": "core_bridge_cmd + core.json / interact.json / variants.json",
+      "signatures": ["hps_io", "conf_str"],
+      "note": "The whole OSD/host contract is re-implemented; menu options become bridge registers or JSON controls. There is no in-core OSD on the Pocket.",
+      "provenance": "public MiSTer hps_io; public open-fpga/core-template core_bridge_cmd."
+    },
+    {
+      "mister": "ioctl_download / ioctl_wr / ioctl_addr / ioctl_dout / ioctl_index (ROM stream)",
+      "apf": "data.json dataslots + dataslot_* handshake + a data_loader CDC",
+      "signatures": ["ioctl_download", "ioctl_wr", "ioctl_addr", "ioctl_dout", "ioctl_index"],
+      "note": "ROM streaming becomes a bridge-fed dataslot. agg23/analogue-pocket-utils data_loader.sv is the CDC that turns 32-bit bridge writes into memory writes, crossing clk_74a->clk_memory via an internal sync_fifo and conditionally byteswapping on bridge_endian_little. Strategy A (common): wrap data_loader to regenerate the exact ioctl_* net names so the original core runs unmodified.",
+      "provenance": "public agg23/analogue-pocket-utils data_loader.sv; observed in public opengateware/agg23 ports."
+    },
+    {
+      "mister": "status[...] menu word",
+      "apf": "discrete bridge-register writes / interact.json",
+      "signatures": ["status"],
+      "note": "Menu status bits become individual bridge registers or interact.json controls.",
+      "provenance": "public open-fpga/core-template bridge interface."
+    },
+    {
+      "mister": "joystick_0..3",
+      "apf": "cont1..4_key / cont1..4_joy[31:0] + input.json",
+      "signatures": ["joystick_0", "joystick_1", "joystick"],
+      "note": "Controller inputs are decoded from the APF cont*_key/joy words by a gamepad/synch block and mapped via input.json.",
+      "provenance": "public open-fpga/core-template controller interface."
+    },
+    {
+      "mister": "hiscore / NVRAM save (sys)",
+      "apf": "data_unloader + save dataslots (target_dataslot_read/_write/_getfile)",
+      "signatures": ["hiscore", "nvram"],
+      "note": "Save/NVRAM rides on save dataslots via a data_unloader, signalled per slot.",
+      "provenance": "public open-fpga/core-template dataslot interface."
+    },
+    {
+      "mister": "ce_pix + arcade_video / ascal / HDMI framebuffer",
+      "apf": "video_rgb[23:0] + video_rgb_clock(_90) + video_de/hs/vs + video.json (via video_mixer -> APF scaler)",
+      "signatures": ["ce_pix", "arcade_video", "vga_", "hdmi"],
+      "note": "Expand RGB to 24-bit (5->8 or 4->8); replace ce_pix with a real pixel clock; delegate rotation/aspect to the APF scaler via video.json. The MiSTer HDMI/ascal pipeline is dropped.",
+      "provenance": "public open-fpga/core-template video path."
+    },
+    {
+      "mister": "AUDIO_L/R parallel PCM",
+      "apf": "i2s: audio_mclk / audio_dac / audio_lrck (via sound_i2s / audio_mixer + audio_pll)",
+      "signatures": ["audio_l", "audio_r"],
+      "note": "There is no parallel PCM bus on the Pocket; convert to serial i2s. An audio PLL output is typically added.",
+      "provenance": "public open-fpga/core-template audio path (i2s)."
+    },
+    {
+      "mister": "sys / sys_top / sys.tcl framework, SD-card FAT, DDR3 framebuffer",
+      "apf": "DROPPED (no APF equivalent)",
+      "signatures": ["sys_top", "ddram", "ddr3"],
+      "note": "The MiSTer sys framework, SD-card FAT layer, and DDR3 framebuffer have no APF equivalent and are removed; external storage rides on dataslots instead.",
+      "provenance": "public MiSTer sys framework vs public APF (no equivalent)."
+    }
+  ]
+}

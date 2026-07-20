@@ -1,0 +1,186 @@
+{
+  "_comment": "Public chip/IP catalogue: chip families and their known proven Analogue-Pocket implementations. Every entry is public fact (public GitHub repos + published chip names). Licenses are pointers: confirm each in the linked repo's own LICENSE file. Quality flag is conservative -- only jotego jt51 is a documented true-drop-in exemplar; all others are reference-start because implementations diverge per-instance and must be diffed before reuse.",
+  "chips": [
+    {
+      "id": "z80-t80",
+      "name": "Zilog Z80 (T80 soft-core)",
+      "category": "cpu",
+      "signatures": ["t80", "cpu-t80"],
+      "pocket_parts": [
+        {"source": "opengateware arcade cores (congo, galaga, gberet, irem_m72, pooyan, xevious), computer-msx", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware"},
+        {"source": "nullobject/openfpga-tecmo (quartus/t80)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/nullobject/openfpga-tecmo"}
+      ],
+      "provenance": "public repos opengateware/*, agg23/openFPGA-Genesis, ericlewis/*, nullobject/openfpga-tecmo, Mazamars312/*; T80 is Daniel Wallner / MikeJ. Note: T80 diverges across porters (variants differ by hundreds of lines) -- diff before reuse."
+    },
+    {
+      "id": "z80-tv80",
+      "name": "Zilog Z80 (TV80 soft-core)",
+      "category": "cpu",
+      "signatures": ["tv80", "cpu-tv80"],
+      "pocket_parts": [
+        {"source": "opengateware/arcade-bankp, opengateware/arcade-digdug", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware"}
+      ],
+      "provenance": "public repos opengateware/arcade-bankp, opengateware/arcade-digdug; TV80 is Guy Hutchison (Verilog)."
+    },
+    {
+      "id": "m6502-t65",
+      "name": "MOS 6502 (T65 soft-core)",
+      "category": "cpu",
+      "signatures": ["t65"],
+      "pocket_parts": [
+        {"source": "agg23/openfpga-NES (rtl/upstream/t65), ericlewis/{asteroids,dominos,lunarlander,superbreakout}", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/ericlewis"}
+      ],
+      "provenance": "public repos agg23/openfpga-NES, ericlewis/*; T65 is MikeJ (VHDL)."
+    },
+    {
+      "id": "w65c816",
+      "name": "WDC 65C816 (SNES CPU)",
+      "category": "cpu",
+      "signatures": ["p65816", "65c816"],
+      "pocket_parts": [
+        {"source": "agg23/openfpga-SNES (rtl/upstream/65C816)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/agg23/openfpga-SNES"}
+      ],
+      "provenance": "public repo agg23/openfpga-SNES."
+    },
+    {
+      "id": "m68000-fx68k",
+      "name": "Motorola 68000 (fx68k soft-core)",
+      "category": "cpu",
+      "signatures": ["fx68k"],
+      "pocket_parts": [
+        {"source": "agg23/openFPGA-Genesis (rtl/FX68K), Mazamars312/Analogue_Pocket_Neogeo, Mazamars312/Analogue-Amiga", "kind": "reference-start", "license": "confirm-in-repo (header: (c) 2018 Jorge Cwik)", "url": "https://github.com/agg23/openFPGA-Genesis"}
+      ],
+      "provenance": "public repos agg23/openFPGA-Genesis, Mazamars312/*; fx68k is Jorge Cwik. Note: Genesis vs Neogeo copies differ (~64 lines, HALTn wiring) -- diff before reuse."
+    },
+    {
+      "id": "nec-v30",
+      "name": "NEC V30 (Irem M72 main CPU family)",
+      "category": "cpu",
+      "signatures": ["v30", "cpu-v30"],
+      "pocket_parts": [
+        {"source": "opengateware/arcade-irem_m72, opengateware/arcade-irem_m92 (modules/cpu-v30)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware"}
+      ],
+      "provenance": "public repos opengateware/arcade-irem_m72, opengateware/arcade-irem_m92; silicon XTAL(32MHz) per mamedev/mame src/mame/irem/m72.cpp."
+    },
+    {
+      "id": "nec-v33v35",
+      "name": "NEC V33/V35 (Irem M92 CPU, carries crypt key)",
+      "category": "cpu",
+      "signatures": ["v35", "v33"],
+      "pocket_parts": [
+        {"source": "opengateware/arcade-irem_m92 (rtl/v35.sv)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware/arcade-irem_m92"}
+      ],
+      "provenance": "public repo opengateware/arcade-irem_m92; note the V35 carries a 256-byte crypt key."
+    },
+    {
+      "id": "huc6280",
+      "name": "Hudson HuC6280 (PC Engine CPU, 65C02-derived)",
+      "category": "cpu",
+      "signatures": ["huc6280"],
+      "pocket_parts": [
+        {"source": "agg23/openfpga-pcengine (rtl/pce/HUC6280)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/agg23/openfpga-pcengine"}
+      ],
+      "provenance": "public repo agg23/openfpga-pcengine."
+    },
+    {
+      "id": "i8051-mc8051",
+      "name": "Intel 8051 / i8751 MCU (protection)",
+      "category": "cpu",
+      "signatures": ["mc8051", "cpu-mc8051"],
+      "pocket_parts": [
+        {"source": "opengateware/arcade-irem_m72 (modules/cpu-mc8051)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware/arcade-irem_m72"}
+      ],
+      "provenance": "public repo opengateware/arcade-irem_m72."
+    },
+    {
+      "id": "namco-mb88xx",
+      "name": "Namco MB88xx MCU",
+      "category": "cpu",
+      "signatures": ["mb88xx", "cpu-mb88xx"],
+      "pocket_parts": [
+        {"source": "opengateware/arcade-galaga, opengateware/arcade-xevious", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware"}
+      ],
+      "provenance": "public repos opengateware/arcade-galaga, opengateware/arcade-xevious."
+    },
+    {
+      "id": "ym2151-jt51",
+      "name": "Yamaha YM2151 OPM (jotego jt51)",
+      "category": "sound",
+      "signatures": ["jt51", "sound-jt51"],
+      "pocket_parts": [
+        {"source": "jotego jt-cores (jt51), vendored in opengateware/arcade-irem_m72, opengateware/arcade-irem_m92", "kind": "true-drop-in", "license": "GPL-family (jotego jt-cores; confirm-in-repo LICENSE)", "url": "https://github.com/jotego/jt51"}
+      ],
+      "provenance": "public jotego jt51 library, vendored in public opengateware Irem cores; the documented true-drop-in reuse exemplar."
+    },
+    {
+      "id": "ym2612-jt12",
+      "name": "Yamaha YM2612/YM2610/YM2203 (jotego jt12)",
+      "category": "sound",
+      "signatures": ["jt12", "jt03"],
+      "pocket_parts": [
+        {"source": "jotego jt-cores (jt12), vendored in agg23/openFPGA-Genesis, Mazamars312/Analogue_Pocket_Neogeo", "kind": "reference-start", "license": "GPL-family (jotego jt-cores; confirm-in-repo LICENSE)", "url": "https://github.com/jotego/jt12"}
+      ],
+      "provenance": "public jotego jt12 library; note jt03.v differs Genesis vs Neogeo (~45 lines) -- diff before reuse."
+    },
+    {
+      "id": "ay8910-jt49",
+      "name": "GI AY-3-8910 / YM2149 (jotego jt49)",
+      "category": "sound",
+      "signatures": ["jt49", "sound-jt49"],
+      "pocket_parts": [
+        {"source": "jotego jt-cores (jt49), vendored in opengateware/computer-msx, Mazamars312/Analogue_Pocket_Neogeo", "kind": "reference-start", "license": "GPL-family (jotego jt-cores; confirm-in-repo LICENSE)", "url": "https://github.com/jotego/jt49"}
+      ],
+      "provenance": "public jotego jt49 library; also a non-jotego ym2149 exists in opengateware/arcade-pooyan."
+    },
+    {
+      "id": "sn76489-jt89",
+      "name": "TI SN76489/76496 PSG (jotego jt89 / non-jotego)",
+      "category": "sound",
+      "signatures": ["jt89", "sn76489", "sn76496", "sound-sn76489", "sound-sn76496"],
+      "pocket_parts": [
+        {"source": "jotego jt89 in agg23/openFPGA-Genesis; non-jotego sn76489/96 in opengateware/{arcade-bankp,arcade-congo,arcade-gberet}", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/jotego/jt89"}
+      ],
+      "provenance": "public jotego jt89 + public opengateware cores; the opengateware sn76489/96 is single-porter clustered (best near-identical reuse candidate)."
+    },
+    {
+      "id": "ym3812-jtopl",
+      "name": "Yamaha OPL YM3526/YM3812 (jotego jtopl)",
+      "category": "sound",
+      "signatures": ["jtopl"],
+      "pocket_parts": [
+        {"source": "jotego jt-cores (jtopl), vendored in nullobject/openfpga-tecmo", "kind": "reference-start", "license": "GPL-family (jotego jt-cores; confirm-in-repo LICENSE)", "url": "https://github.com/jotego/jtopl"}
+      ],
+      "provenance": "public jotego jtopl library, vendored in public nullobject/openfpga-tecmo."
+    },
+    {
+      "id": "msm5205-jt5205",
+      "name": "OKI MSM5205 ADPCM (jotego jt5205 / non-jotego)",
+      "category": "sound",
+      "signatures": ["jt5205", "msm5205"],
+      "pocket_parts": [
+        {"source": "jotego jt5205 in nullobject/openfpga-tecmo; non-jotego MSM5205 in agg23/openfpga-pcengine", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/jotego/jt5205"}
+      ],
+      "provenance": "public jotego jt5205 + public agg23/openfpga-pcengine."
+    },
+    {
+      "id": "namco-wsg",
+      "name": "Namco WSG (custom 3-channel wavetable)",
+      "category": "sound",
+      "signatures": ["wsg", "sound_machine"],
+      "pocket_parts": [
+        {"source": "opengateware/arcade-digdug (rtl/wsg.v), opengateware/arcade-galaga (rtl/sound_machine.vhd)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/opengateware"}
+      ],
+      "provenance": "public repos opengateware/arcade-digdug, opengateware/arcade-galaga."
+    },
+    {
+      "id": "nes-apu",
+      "name": "Nintendo NES APU",
+      "category": "sound",
+      "signatures": ["apu"],
+      "pocket_parts": [
+        {"source": "agg23/openfpga-NES (rtl/upstream/apu.sv)", "kind": "reference-start", "license": "confirm-in-repo", "url": "https://github.com/agg23/openfpga-NES"}
+      ],
+      "provenance": "public repo agg23/openfpga-NES."
+    }
+  ]
+}

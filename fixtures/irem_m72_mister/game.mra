@@ -1,0 +1,14 @@
+<misterromdescription>
+  <name>Irem M72 (fixture)</name>
+  <rbf>m72</rbf>
+  <rom index="0" zip="fixture.zip">
+    <interleave output="16">
+      <part name="cpu.h" crc="aaaa"/>
+      <part name="cpu.l" crc="bbbb"/>
+    </interleave>
+    <part name="snd.rom" crc="cccc" repeat="2"/>
+  </rom>
+  <rom index="1">
+    <part name="nvram.bin"/>
+  </rom>
+</misterromdescription>

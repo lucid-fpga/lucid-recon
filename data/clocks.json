@@ -1,0 +1,56 @@
+{
+  "_comment": "Public clock reference data. Ratios are derivable from public MAME driver XTAL literals; the ref-swap and pixel-PLL pattern from the public open-fpga/core-template + agg23/analogue-pocket-utils. Core clock ratios are preserved verbatim in a port (dictated by reused game RTL); the universal transforms are the 50->74.25 reference swap and adding an explicit pixel-clock PLL output.",
+  "ref_swap": {
+    "from_mhz": 50.0,
+    "to_mhz": 74.25,
+    "note": "MiSTer assumes a 50 MHz board reference; the Pocket supplies 74.25 MHz on clk_74a. Re-target the PLL reference input to 74.25 MHz and re-solve the multipliers to keep every core clock ratio identical.",
+    "provenance": "public open-fpga/core-template (clk_74a) + agg23/analogue-pocket-utils."
+  },
+  "pixel_pll": {
+    "add_output": true,
+    "note": "Where MiSTer drove pixels with a ce_pix clock-enable, add an explicit pixel-clock PLL output (= core clock / N) feeding video_rgb_clock; the APF scaler wants a real pixel clock, not a clock-enable.",
+    "provenance": "public open-fpga/core-template video path (video_rgb_clock) + observed in public ports."
+  },
+  "families": [
+    {
+      "family": "irem-m72",
+      "cores": ["irem_m72", "m72"],
+      "core_ratio": "3:1 (sys 32 MHz : mem 96 MHz), pixel 8 MHz explicit",
+      "signatures": ["m72", "irem_m72"],
+      "note": "Irem M72: master XTAL 32 MHz, SDRAM at 3x, pixel = master/4 = 8 MHz. One PLL; add clk_vid.",
+      "provenance": "mamedev/mame src/mame/irem/m72.cpp XTAL(32'000'000); public opengateware/arcade-irem_m72."
+    },
+    {
+      "family": "irem-m92",
+      "cores": ["irem_m92", "m92"],
+      "core_ratio": "3:1 (sys 40 MHz : mem 120 MHz), pixel 6.667 MHz explicit",
+      "signatures": ["m92", "irem_m92"],
+      "note": "Irem M92: pixel 6.667 = 26.6667 MHz XTAL / 4 (exact); the 40 MHz sys is a SYNTHETIC jtframe base (6x pixel), not a raw XTAL -- flag as synthetic. Split to core_pll + sdram_pll.",
+      "provenance": "mamedev/mame src/mame/irem/m92.cpp (26.6667 MHz XTAL); public opengateware/arcade-irem_m92."
+    },
+    {
+      "family": "sega-genesis",
+      "cores": ["genesis", "megadrive", "megadriv"],
+      "core_ratio": "2:1 (sys ~53.69 MHz : mem ~107.4 MHz), pixel ~6.7 MHz",
+      "signatures": ["genesis", "megadriv", "megadrive"],
+      "note": "Genesis: NTSC master 53.693175 MHz IS the sys clock; SDRAM 2x; pixel ~= master/8. Direct from XTAL.",
+      "provenance": "mamedev/mame src/mame/sega/megadriv.cpp XTAL 53.693175 MHz; public agg23/openFPGA-Genesis."
+    },
+    {
+      "family": "nintendo-nes",
+      "cores": ["nes"],
+      "core_ratio": "4:1 (sys 21.477 MHz : mem 85.9 MHz), pixel 5.369 MHz explicit",
+      "signatures": ["nes"],
+      "note": "NES: RP2A03 NTSC XTAL 21.477272 MHz IS the sys clock; SDRAM 4x; pixel = master/4 (PPU dot clock). PAL retune disabled in the port.",
+      "provenance": "mamedev/mame src/mame/nintendo/nes.cpp RP2A03_NTSC_XTAL(21'477'272); public agg23/openfpga-NES."
+    },
+    {
+      "family": "nintendo-snes",
+      "cores": ["snes"],
+      "core_ratio": "16:4:1 (sys 21.48 MHz : mem 85.9 MHz : pixel 5.37 MHz); separate 24.576 MHz audio domain",
+      "signatures": ["snes"],
+      "note": "SNES: MCLK NTSC 21.477272 MHz; SDRAM 4x; pixel = master/4; the S-SMP audio runs on a SEPARATE 24.576 MHz domain (24.576/12 = 2.048 MHz) -- a genuine second clock domain to plan.",
+      "provenance": "mamedev/mame src/mame/nintendo/snes.cpp (MCLK 21.477272 MHz, audio 24.576 MHz); public agg23/openfpga-SNES."
+    }
+  ]
+}

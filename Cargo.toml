@@ -1,0 +1,25 @@
+[workspace]
+
+[package]
+name = "lucid-recon"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Port-intelligence analyzer for FPGA cores: reads a MiSTer core and emits an Analogue-Pocket port plan — clock plan, CDC hotspots, memory profile, component BOM with sourced parts, template pick, and ROM inventory."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/lucid-fpga/lucid-recon"
+readme = "README.md"
+keywords = ["fpga", "mister", "analogue-pocket", "porting", "sdc"]
+categories = ["hardware-support", "development-tools", "command-line-utilities"]
+
+[[bin]]
+name = "lucid-recon"
+path = "src/main.rs"
+
+[dependencies]
+# The CDC / clock / memory engine, reused as a library (path dep until published).
+cdc-sentinel = { path = "../cdc-sentinel" }
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+regex = "1"
