@@ -25,7 +25,14 @@ fn ext_of(path: &str) -> String {
 }
 
 fn is_wanted(path: &str) -> bool {
-    matches!(ext_of(path).as_str(), "sdc" | "v" | "sv" | "vh" | "svh" | "mra")
+    // Include VHDL (.vhd/.vhdl): a large fraction of real MiSTer CPU/sound cores
+    // (T80, V30, 65xx, 8051, ...) are VHDL, each in a dir named for the chip, so
+    // collecting them lets BOM detection find the component by path. Without this,
+    // a VHDL main CPU (e.g. rtl/v30/cpu.vhd) is silently missed.
+    matches!(
+        ext_of(path).as_str(),
+        "sdc" | "v" | "sv" | "vh" | "svh" | "vhd" | "vhdl" | "mra"
+    )
 }
 
 impl CoreFiles {
@@ -118,6 +125,24 @@ impl CoreSource for CoreFiles {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn from_dir_collects_vhdl_cpu_cores() {
+        // Regression (real MiSTer core): CPU/sound cores are often VHDL in a
+        // chip-named dir (rtl/v30/cpu.vhd). from_dir must collect .vhd so BOM
+        // detection can find the component by path — else a VHDL main CPU is missed.
+        let dir = std::env::temp_dir().join(format!("recon-vhd-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("rtl/v30")).unwrap();
+        std::fs::write(dir.join("rtl/v30/cpu.vhd"), "-- vhdl\nentity cpu is end entity;").unwrap();
+        let cf = CoreFiles::from_dir(&dir).unwrap();
+        assert!(
+            cf.files.iter().any(|f| f.path.contains("rtl/v30/cpu.vhd")),
+            "VHDL cores must be collected: {:?}",
+            cf.files.iter().map(|f| &f.path).collect::<Vec<_>>()
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 
     #[test]
     fn collects_and_partitions() {
